@@ -42,7 +42,6 @@ import 'src/video_player_mdk.dart'
 void registerWith({dynamic options}) {
   MdkVideoPlayerPlatform.registerVideoPlayerPlatformsWith(options: options);
 }
-
 /*
 bool isRegistered() {
   return VideoPlayerPlatform.instance.runtimeType == MdkVideoPlayerPlatform;
