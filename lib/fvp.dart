@@ -4,6 +4,7 @@
 
 import 'src/video_player_mdk.dart'
     if (dart.library.html) 'src/video_player_dummy.dart';
+import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
 /// Registers this plugin as the default instance of [VideoPlayerPlatform]. Then your [VideoPlayer] will support all platforms.
 
@@ -42,8 +43,8 @@ import 'src/video_player_mdk.dart'
 void registerWith({dynamic options}) {
   MdkVideoPlayerPlatform.registerVideoPlayerPlatformsWith(options: options);
 }
-/*
+
 bool isRegistered() {
   return VideoPlayerPlatform.instance.runtimeType == MdkVideoPlayerPlatform;
 }
-*/
+
