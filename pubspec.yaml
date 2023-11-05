@@ -14,7 +14,12 @@ dependencies:
   logging: ^1.2.0
   path: ^1.8.3
   plugin_platform_interface: ^2.1.6
-  video_player_platform_interface: ^6.2.1
+  video_player_platform_interface:
+    git:
+      url: https://github.com/lKinderBueno/video_player.git
+      path: video_player_platform_interface
+      ref: v2.7.1
+      #ref: 25dc409d82e114bbe381449f5c4f090184b7cd49
 
 dev_dependencies:
   flutter_test:
