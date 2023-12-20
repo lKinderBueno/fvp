@@ -294,9 +294,7 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
     int trackLength = _players[textureId]?.mediaInfo.audio?.length ?? 0;
     if (trackLength == 0) return Future(() => null);
 
-    List<int> tracks = List<int>.generate(trackLength, (index) => 0);
-    tracks[index] = 1;
-    _players[textureId]?.setActiveTracks(MediaType.audio, tracks);
+    _players[textureId]?.setActiveTracks(MediaType.audio, [index]);
     return Future(() => null);
   }
 
@@ -316,9 +314,7 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
     int trackLength = _players[textureId]?.mediaInfo.video?.length ?? 0;
     if (trackLength == 0) return Future(() => null);
 
-    List<int> tracks = List<int>.generate(trackLength, (index) => 0);
-    tracks[index] = 1;
-    _players[textureId]?.setActiveTracks(MediaType.video, tracks);
+    _players[textureId]?.setActiveTracks(MediaType.video, [index]);
     return Future(() => null);
   }
 
@@ -337,9 +333,7 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
     int trackLength = _players[textureId]?.mediaInfo.video?.length ?? 0;
     if (trackLength == 0 || embeddedSubtitle == null || embeddedSubtitle.trackIndex == null) return Future(() => null);
 
-    List<int> tracks = List<int>.generate(trackLength, (index) => 0);
-    tracks[embeddedSubtitle.trackIndex!] = 1;
-    _players[textureId]?.setActiveTracks(MediaType.subtitle, tracks);
+    _players[textureId]?.setActiveTracks(MediaType.subtitle, [embeddedSubtitle.trackIndex!]);
     return Future(() => null);
   }
 
