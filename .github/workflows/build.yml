@@ -1,9 +1,9 @@
 name: Build
 # 7z => cmake -E tar xvf/cvf --format=7zip
 on:
-  push:
-  schedule:
-    - cron: '0 6 * * 0'
+  #push:
+  #schedule:
+  #  - cron: '0 6 * * 0'
 
 jobs:
   macOS:
