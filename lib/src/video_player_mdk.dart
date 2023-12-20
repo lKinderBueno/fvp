@@ -1,4 +1,4 @@
-// Copyright 2022 Wang Bin. All rights reserved.
+// Copyright 2022-2023 Wang Bin. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,6 +67,7 @@ class MdkVideoPlayer extends mdk.Player {
     onStateChanged((oldValue, newValue) {
       _log.fine('$hashCode player$nativeHandle onPlaybackStateChanged: $oldValue => $newValue');
       if (newValue == mdk.PlaybackState.stopped) {
+        // FIXME: keep_open no stopped
         streamCtl.add(VideoEvent(eventType: VideoEventType.completed));
         return;
       }
@@ -82,6 +83,7 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
   static int? _maxWidth;
   static int? _maxHeight;
   static bool? _fitMaxSize;
+  static bool? _tunnel;
   static int _lowLatency = 0;
   static int _seekFlags = mdk.SeekFlag.fromStart | mdk.SeekFlag.inCache;
   static List<String>? _decoders;
@@ -111,6 +113,7 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
       _maxWidth = options["maxWidth"];
       _maxHeight = options["maxHeight"];
       _fitMaxSize = options["fitMaxSize"];
+      _tunnel = options["tunnel"];
       _playerOpts = options['player'];
       _globalOpts = options['global'];
       _decoders = options['video.decoders'];
@@ -183,8 +186,9 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
     final player = MdkVideoPlayer();
     _log.fine('$hashCode player${player.nativeHandle} create($uri)');
 
-    player.setProperty("keep_open", "1");
-    player.setProperty('avio.protocol_whitelist', 'file,rtmp,http,https,tls,rtp,tcp,udp,crypto,httpproxy,data,concatf,concat,subfile');
+    //player.setProperty("keep_open", "1");
+    player.setProperty('avio.protocol_whitelist',
+        'file,rtmp,http,https,tls,rtp,tcp,udp,crypto,httpproxy,data,concatf,concat,subfile');
     player.setProperty('avformat.rtsp_transport', 'tcp');
     _playerOpts?.forEach((key, value) {
       player.setProperty(key, value);
@@ -213,7 +217,11 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
     player.media = uri!;
     player.prepare(); // required!
 // FIXME: pending events will be processed after texture returned, but no events before prepared
-    final tex = await player.updateTexture(width: _maxWidth, height: _maxHeight, fit: _fitMaxSize);
+    final tex = await player.updateTexture(
+        width: _maxWidth,
+        height: _maxHeight,
+        tunnel: _tunnel,
+        fit: _fitMaxSize);
     if (tex < 0) {
       player.dispose();
       throw PlatformException(

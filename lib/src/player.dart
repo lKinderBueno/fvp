@@ -1,4 +1,4 @@
-// Copyright 2022 Wang Bin. All rights reserved.
+// Copyright 2022-2023 Wang Bin. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import 'dart:async';
@@ -24,7 +24,6 @@ class Player {
 
   Player() {
     _pp.value = _player;
-    _fi.attach(this, this);
     _receivePort.listen((message) async {
       final type = message[0] as int;
       final rep = calloc<_CallbackReply>();
@@ -157,7 +156,8 @@ class Player {
   ///
   /// Texture will be created when media is loaded and [mediaInfo.video] is not empty.
   /// If both [width] and [height] are null, texture size is video frame size, otherwise is requested size.
-  Future<int> updateTexture({int? width, int? height, bool? fit}) async {
+  Future<int> updateTexture(
+      {int? width, int? height, bool? tunnel, bool? fit}) async {
     if (_texId >= 0) {
       textureId.value = null;
       await FvpPlatform.instance.releaseTexture(nativeHandle, _texId);
@@ -169,14 +169,14 @@ class Player {
       if (size == null) {
         return -1;
       }
-      _texId = await FvpPlatform.instance
-          .createTexture(nativeHandle, size.width.toInt(), size.height.toInt());
+      _texId = await FvpPlatform.instance.createTexture(nativeHandle,
+          size.width.toInt(), size.height.toInt(), tunnel ?? false);
       textureId.value = _texId;
       return _texId;
     }
     if (width != null && height != null && width > 0 && height > 0) {
-      _texId =
-          await FvpPlatform.instance.createTexture(nativeHandle, width, height);
+      _texId = await FvpPlatform.instance
+          .createTexture(nativeHandle, width, height, tunnel ?? false);
       textureId.value = _texId;
       return _texId;
     }
@@ -639,11 +639,6 @@ class Player {
 
   final _player = Libmdk.instance.mdkPlayerAPI_new();
   var _pp = calloc<Pointer<mdkPlayerAPI>>();
-
-  static final _fi = Finalizer((p0) {
-    final p = p0 as Player;
-    p.dispose();
-  });
 
   int _texId = -1;
   var _videoSize = Completer<ui.Size?>();

@@ -1,3 +1,12 @@
+## 0.12.0
+
+* make libfvp_plugin.so optional on android
+
+## 0.11.0
+
+* support flutter 3.16, fix runtime error
+* fix isCompleted is never true since previous version
+
 ## 0.10.0
 
 * keep open when play to end
