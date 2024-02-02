@@ -37,9 +37,6 @@ class MdkVideoPlayer extends mdk.Player {
         if (info.video != null) {
           final vc = info.video![0].codec;
           size = Size(vc.width.toDouble(), (vc.height.toDouble() / vc.par).roundToDouble());
-          if (info.video![0].rotation % 180 == 90) {
-            size = Size(size.height, size.width);
-          }
         }
         streamCtl.add(VideoEvent(
             eventType: VideoEventType.initialized,
