@@ -332,7 +332,9 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
     var tracks = _players[textureId]?.mediaInfo.subtitle;
     if (tracks == null) return [];
     return Future.value(tracks.map((e) {
-      var _e = EmbeddedSubtitle(language: null, label: "Track ${i}", trackIndex: i, groupIndex: i, renderIndex: i);
+      var _t = "${i+1} ";
+      if (e.metadata.containsKey("language")) _t += "${e.metadata["language"]} ";
+      var _e = EmbeddedSubtitle(language: null, label: _t, trackIndex: i, groupIndex: i, renderIndex: i);
       i++;
       return _e;
     }).toList());
