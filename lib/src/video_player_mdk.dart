@@ -40,10 +40,8 @@ class MdkVideoPlayer extends mdk.Player {
         }
         streamCtl.add(VideoEvent(
             eventType: VideoEventType.initialized,
-            duration: Duration(
-                milliseconds: info.duration == 0
-                    ? double.maxFinite.toInt()
-                    : info.duration) // FIXME: live stream info.duraiton == 0 and result a seekTo(0) in play()
+            duration:
+                Duration(milliseconds: info.duration == 0 ? double.maxFinite.toInt() : info.duration) // FIXME: live stream info.duraiton == 0 and result a seekTo(0) in play()
             ,
             size: size));
       } else if (!oldValue.test(mdk.MediaStatus.buffering) && newValue.test(mdk.MediaStatus.buffering)) {
@@ -59,8 +57,7 @@ class MdkVideoPlayer extends mdk.Player {
       if (ev.category == "reader.buffering") {
         final pos = position;
         final bufLen = buffered();
-        streamCtl.add(VideoEvent(
-            eventType: VideoEventType.bufferingUpdate, buffered: [DurationRange(Duration(microseconds: pos), Duration(milliseconds: pos + bufLen))]));
+        streamCtl.add(VideoEvent(eventType: VideoEventType.bufferingUpdate, buffered: [DurationRange(Duration(microseconds: pos), Duration(milliseconds: pos + bufLen))]));
       }
     });
 
@@ -132,8 +129,7 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
       };
       _decoders = vd[Platform.operatingSystem];
     }
-    mdk.setGlobalOption('subtitle.fonts.file',
-        _assetUri(_subtitleFontFile ?? 'assets/subfont.ttf', null));
+    mdk.setGlobalOption('subtitle.fonts.file', _assetUri(_subtitleFontFile ?? 'assets/subfont.ttf', null));
     _globalOpts?.forEach((key, value) {
       mdk.setGlobalOption(key, value);
     });
@@ -195,8 +191,7 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
     //player.setProperty("keep_open", "1");
     player.setProperty('video.decoder', 'shader_resource=0');
     player.setProperty('avformat.strict', 'experimental');
-    player.setProperty('avio.protocol_whitelist',
-        'file,rtmp,http,https,tls,rtp,tcp,udp,crypto,httpproxy,data,concatf,concat,subfile');
+    player.setProperty('avio.protocol_whitelist', 'file,rtmp,http,https,tls,rtp,tcp,udp,crypto,httpproxy,data,concatf,concat,subfile');
     player.setProperty('avformat.rtsp_transport', 'tcp');
     _playerOpts?.forEach((key, value) {
       player.setProperty(key, value);
@@ -226,11 +221,7 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
     player.prepare(); // required!
 // FIXME: pending events will be processed after texture returned, but no events before prepared
 // FIXME: set tunnel too late
-    final tex = await player.updateTexture(
-        width: _maxWidth,
-        height: _maxHeight,
-        tunnel: _tunnel,
-        fit: _fitMaxSize);
+    final tex = await player.updateTexture(width: _maxWidth, height: _maxHeight, tunnel: _tunnel, fit: _fitMaxSize);
     if (tex < 0) {
       player.dispose();
       throw PlatformException(
@@ -277,8 +268,13 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
 
   @override
   Future<List<String?>> getAudioTracks(int textureId) async {
-    return [];
-    return Future.value(_players[textureId]?.mediaInfo.audio?.map((e) => "Track ${e.index} - ${e.codec}").toList());
+    return Future.value(_players[textureId]?.mediaInfo.audio?.map((e) {
+      var _t = "";
+      if (e.metadata.containsKey("language")) _t += "${e.metadata["language"]} ";
+      if (e.codec.codec.length > 0) _t += "${e.codec.codec}";
+      if (e.codec.bitRate > 0) _t += " - ${e.codec.bitRate}bps";
+      return _t;
+    }).toList());
   }
 
   @override
@@ -291,14 +287,23 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
     int trackLength = _players[textureId]?.mediaInfo.audio?.length ?? 0;
     if (trackLength == 0) return Future(() => null);
 
-    _players[textureId]?.setActiveTracks(MediaType.audio, [index]);
+      _players[textureId]?.setActiveTracks(MediaType.audio, [index]);
     return Future(() => null);
   }
 
   @override
   Future<List<String?>> getVideoTracks(int textureId) async {
-    return [];
-    return Future.value(_players[textureId]?.mediaInfo.video?.map((e) => "Track ${e.index} - ${e.codec}").toList());
+    int i = 1;
+    return Future.value(_players[textureId]?.mediaInfo.video?.map((e) {
+      var _t = "";
+      if (e.codec.codec.length > 0) _t += "${e.codec.codec}";
+      if (e.codec.width > 0) _t += " - ${e.codec.width}p";
+      if (e.codec.frameRate > 0) _t += " - ${e.codec.frameRate}FPS";
+      if (e.duration > 0) {
+        _t += " - ${Duration(milliseconds: e.duration).toString()}";
+      }
+      return _t;
+    }).toList());
   }
 
   @override
@@ -317,12 +322,12 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
 
   @override
   Future<List<EmbeddedSubtitle>> getEmbeddedSubtitles(int textureId) async {
-    return [];
-    return Future.value(_players[textureId]
-        ?.mediaInfo
-        .subtitle
-        ?.map((e) => EmbeddedSubtitle(language: null, label: "Track ${e.index}", trackIndex: e.index, groupIndex: e.index, renderIndex: e.index))
-        .toList());
+    int i = 0;
+    return Future.value(_players[textureId]?.mediaInfo.subtitle?.map((e) {
+      var _e = EmbeddedSubtitle(language: null, label: "Track ${i}", trackIndex: i, groupIndex: i, renderIndex: i);
+      i++;
+      return _e;
+    }).toList());
   }
 
   @override
@@ -334,7 +339,6 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
     return Future(() => null);
   }
 
-
   @override
   Future<Duration> getPosition(int textureId) async {
     final player = _players[textureId];
@@ -343,8 +347,7 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
     }
     final pos = player.position;
     final bufLen = player.buffered();
-    player.streamCtl.add(VideoEvent(
-        eventType: VideoEventType.bufferingUpdate, buffered: [DurationRange(Duration(microseconds: pos), Duration(milliseconds: pos + bufLen))]));
+    player.streamCtl.add(VideoEvent(eventType: VideoEventType.bufferingUpdate, buffered: [DurationRange(Duration(microseconds: pos), Duration(milliseconds: pos + bufLen))]));
     return Duration(milliseconds: pos);
   }
 
