@@ -268,7 +268,10 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
 
   @override
   Future<List<String?>> getAudioTracks(int textureId) async {
-    return Future.value(_players[textureId]?.mediaInfo.audio?.map((e) {
+    var tracks = _players[textureId]?.mediaInfo.audio;
+    if (tracks == null) return [];
+
+    return Future.value(tracks.map((e) {
       var _t = "";
       if (e.metadata.containsKey("language")) _t += "${e.metadata["language"]} ";
       if (e.codec.codec.length > 0) _t += "${e.codec.codec}";
@@ -287,14 +290,17 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
     int trackLength = _players[textureId]?.mediaInfo.audio?.length ?? 0;
     if (trackLength == 0) return Future(() => null);
 
-      _players[textureId]?.setActiveTracks(MediaType.audio, [index]);
+    _players[textureId]?.setActiveTracks(MediaType.audio, [index]);
     return Future(() => null);
   }
 
   @override
   Future<List<String?>> getVideoTracks(int textureId) async {
     int i = 1;
-    return Future.value(_players[textureId]?.mediaInfo.video?.map((e) {
+    var tracks = _players[textureId]?.mediaInfo.video;
+    if (tracks == null) return [];
+
+    return Future.value(tracks.map((e) {
       var _t = "";
       if (e.codec.codec.length > 0) _t += "${e.codec.codec}";
       if (e.codec.width > 0) _t += " - ${e.codec.width}p";
@@ -323,7 +329,9 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
   @override
   Future<List<EmbeddedSubtitle>> getEmbeddedSubtitles(int textureId) async {
     int i = 0;
-    return Future.value(_players[textureId]?.mediaInfo.subtitle?.map((e) {
+    var tracks = _players[textureId]?.mediaInfo.subtitle;
+    if (tracks == null) return [];
+    return Future.value(tracks.map((e) {
       var _e = EmbeddedSubtitle(language: null, label: "Track ${i}", trackIndex: i, groupIndex: i, renderIndex: i);
       i++;
       return _e;
