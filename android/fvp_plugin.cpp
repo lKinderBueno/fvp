@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2023-2024 WangBin <wbsecg1 at gmail.com>
  */
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -27,6 +27,7 @@ public:
     int width = 0;
     int height = 0;
     jobject surface = nullptr;
+    void* vo_opaque = nullptr; // can change by TextureRegistry.SurfaceProducer.Callback
 private:
 };
 
@@ -60,7 +61,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_mediadevkit_fvp_FvpPlugin_nativeSetSurface(JNIEnv *env, jobject thiz, jlong player_handle,
                                                     jlong tex_id, jobject surface, jint w, jint h, jboolean tunnel) {
-    if (!player_handle) {
+    if (!player_handle || !surface) {
         if (auto it = players.find(tex_id); it != players.end()) {
             auto& player = it->second;
             auto s = player->surface;
@@ -69,17 +70,20 @@ Java_com_mediadevkit_fvp_FvpPlugin_nativeSetSurface(JNIEnv *env, jobject thiz, j
             if (s) {
                 env->DeleteGlobalRef(surface);
             }
+        } else {
+            clog << "player not found(already removed?) for textureId " + std::to_string(tex_id) + " surface " + std::to_string((intptr_t)surface) << endl;
         }
         return;
     }
     assert(surface && "null surface");
     auto player = make_shared<TexturePlayer>(player_handle);
     clog << __func__ << endl;
-    if (tunnel) {
+    if (tunnel) { // TODO: tunel via ffi + global var
         player->surface = env->NewGlobalRef(surface);
         player->setProperty("video.decoder", "surface=" + std::to_string((intptr_t)player->surface));
     } else {
         player->updateNativeSurface(surface, w, h);
+        player->vo_opaque = surface;
     }
     players[tex_id] = player;
 }
@@ -109,4 +113,17 @@ MdkIsEmulator()
     if (strstr(v, "emulator"))
         return true;
     return false;
+}
+
+extern "C"
+JNIEXPORT void* JNICALL
+MdkGetPlayerVid(int64_t tex_id)
+{
+    if (tex_id < 0)
+        return nullptr;
+    if (const auto it = players.find(tex_id); it != players.end()) {
+        const auto& player = it->second;
+        return player->vo_opaque;
+    }
+    return nullptr;
 }

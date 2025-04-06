@@ -1,4 +1,4 @@
-// Copyright 2022 Wang Bin. All rights reserved.
+// Copyright 2022-2024 Wang Bin. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import 'dart:ffi';
@@ -70,6 +70,7 @@ class MediaStatus {
     if (test(buffering)) s += '+buffering';
     if (test(buffered)) s += '+buffered';
     if (test(end)) s += '+end';
+    if (test(seeking)) s += '+seeking';
     if (test(invalid)) s += '+invalid';
     return '$s)';
   }
@@ -175,6 +176,8 @@ enum LogLevel {
         return warning;
       case MDK_LogLevel.MDK_LogLevel_Info:
         return info;
+      case MDK_LogLevel.MDK_LogLevel_Debug:
+        return debug;
       case MDK_LogLevel.MDK_LogLevel_All:
         return all;
       default:
@@ -207,6 +210,8 @@ void setGlobalOption<T>(String name, T value) {
     Libmdk.instance.MDK_setGlobalOptionInt32(k.cast(), value);
   } else if (value is bool) {
     Libmdk.instance.MDK_setGlobalOptionInt32(k.cast(), value ? 1 : 0);
+  } else if (value is LogLevel) {
+    Libmdk.instance.MDK_setGlobalOptionInt32(k.cast(), value.rawValue);
   }
   malloc.free(k);
 }
