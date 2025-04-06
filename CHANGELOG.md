@@ -1,3 +1,126 @@
+## 0.31.0
+
+* fix crash when killing app on iOS
+* fix crash when exiting app on linux
+
+
+## 0.30.0
+
+* `subtitleFontFile` option can be an http url
+* ios: fix no sound in silent mode
+* android: fix snapshot result is empty
+* android: use `onSurfaceCleanup` for flutter >= 3.28
+
+## 0.29.0
+
+* not declared as video_player implementation in pubdec.yaml, fix conflicting with other implementations
+* fix app does not launch when debugging
+* android: use new onSurfaceAvailable() for flutter 3.27+
+* android: support add-to-app mode
+* more VideoPlayerController extensions
+* ios: cleanup when detaching from engine
+
+## 0.28.0
+
+* mixWithOthers for iOS
+* privacy manifest for apple
+* enable DXVA decoder for win, used by some win7 devices
+* crash fix
+
+## 0.27.0
+
+* keep video aspect ratio for user specified texture size
+* improve dependency download error check
+* Add VideoPlayerController extension, support adavanced features without using backend api directly
+
+## 0.26.1
+
+* backend api: fix updateTexture() never complete without prepare
+
+## 0.26.0
+
+* improve android impeller, support surface changes. requires flutter 3.24+. for 3.22, impeller is not perfect
+* fix no responding in prepare() using backend api
+* fix hang in updateTexture()
+* ensure texture size is available when initialized
+
+## 0.25.0
+
+* replace exceptions with error events
+* fix metal crash if api validation is enabled
+* cleanup dependencies
+
+## 0.24.1
+
+* fix dispose crash on apple platforms
+
+## 0.24.0
+
+* fix metal sync issue
+
+## 0.23.0
+
+* add `Player.snapshot()`
+* fix sometimes no intialized event
+* enable http(s) reconnect
+* fix Player.state is not current state
+
+## 0.22.0
+
+* windows: fix d3d11 sync issue
+* android: min api level is 21, target sdk 34. this requires flutter > 3.19
+
+## 0.21.0
+
+* add `Player.setAsset()`
+* android 16KB page size
+* compatible with vcrt 14.20
+
+## 0.20.2
+
+* fix macos and ios dependency
+
+## 0.20.1
+
+* fix dependencies install
+
+## 0.20.0
+
+* android: use SurfaceProducer only for impeller, fix surface lifetime if impeller not enabled
+* force upgrade dependencies via environment var `FVP_DEPS_LATEST=1`(except macOS and iOS)
+* support http(s) cache via `registerOpts['player']['demux.buffer.ranges'] = '$positive_int'`
+
+## 0.19.0
+
+* registerWith() can register official backends if a platform is not specified in platforms
+* check seekable range for live streams
+* live stream duration.inMicroseconds is int max
+* fix wasm build
+* fix log level
+
+## 0.18.0
+
+* support Impeller for android. may require flutter 3.19+ to build
+
+## 0.17.0
+
+* fix initialized event
+
+## 0.16.1
+
+* compatible with dart < 3.3
+
+## 0.16.0
+
+* `import 'package:fvp/fvp.dart'` and `registerWith(...)` are optional on windows and linux
+* don't hardcode ffmpeg library name. prepare for ffmpeg 7.0
+
+## 0.15.0
+
+* fix deprecated methods
+* delay texture creation if video size is unknown, improve low latency streams
+* Player: support registing multiple event and state callbacks
+
 ## 0.14.0
 
 * set default subtitle file, required by android subtitle rendering

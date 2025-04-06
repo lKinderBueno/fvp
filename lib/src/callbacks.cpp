@@ -1,4 +1,4 @@
-// Copyright 2022 Wang Bin. All rights reserved.
+// Copyright 2022-2024 Wang Bin. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -268,9 +268,6 @@ FVP_EXPORT void MdkCallbacksUnregisterPort(int64_t handle)
         sp->cv[i].notify_one();
     }
 
-    sp->onEvent(nullptr);
-    sp->onStateChanged(nullptr);
-    sp->onMediaStatusChanged(nullptr);
     players.erase(it);
 }
 
@@ -333,11 +330,14 @@ FVP_EXPORT bool MdkPrepare(int64_t handle, int64_t pos, int64_t seekFlags, void*
     auto sp = it->second;
     auto wp = weak_ptr<Player>(sp);
     const auto tid = this_thread::get_id();
+    sp->set(mdk::State::Stopped);
+    sp->waitFor(mdk::State::Stopped); // ensure correct state
     sp->prepare(pos, [send_port, postCObject, wp, tid](int64_t position, bool* boost){
         auto sp = wp.lock();
         if (!sp)
             return false;
         auto p = sp.get();
+        const auto info = p->mediaInfo();
         const auto type = int(CallbackType::Prepared);
         unique_lock lock(p->mtx[type]);
         p->dataReady[type] = false;
@@ -353,7 +353,14 @@ FVP_EXPORT bool MdkPrepare(int64_t handle, int64_t pos, int64_t seekFlags, void*
                 .as_int64 = position,
             }
         };
-        Dart_CObject* arr[] = { &t, &v };
+// live video duration is 0 when prepared, and then increases to max read time
+        Dart_CObject live{
+            .type = Dart_CObject_kBool,
+            .value = {
+                .as_bool = info.duration <= 0,
+            }
+        };
+        Dart_CObject* arr[] = { &t, &v, &live };
         Dart_CObject msg {
             .type = Dart_CObject_kArray,
             .value = {
@@ -419,4 +426,58 @@ FVP_EXPORT bool MdkSeek(int64_t handle, int64_t pos, int64_t seekFlags, void* po
         }
         return true;
     });
+}
+
+extern "C" void* MdkGetPlayerVid(int64_t texId);
+
+FVP_EXPORT bool MdkSnapshot(int64_t handle, int64_t texId, int w, int h, void* post_c_object, int64_t send_port)
+{
+    const auto it = players.find(handle);
+    if (it == players.cend()) {
+        return false;
+    }
+    const auto postCObject = reinterpret_cast<bool(*)(Dart_Port, Dart_CObject*)>(post_c_object);
+    auto sp = it->second;
+    Player::SnapshotRequest req{
+        .width = w,
+        .height = h,
+    };
+    sp->snapshot(&req, [=](const Player::SnapshotRequest* ret, double frameTime)->string {
+        Dart_CObject t{
+            .type = Dart_CObject_kInt64,
+            .value = {
+                .as_int64 = CallbackType::Snapshot,
+            }
+        };
+        Dart_CObject v{
+            .type = Dart_CObject_kTypedData, // copy to dart. External: no copy
+            .value = {
+                .as_typed_data = {
+                    .type = Dart_TypedData_kUint8,
+                    .length = ret->stride * ret->height,
+                    .values = ret->data,
+                },
+            }
+        };
+        Dart_CObject* arr[] = { &t, &v };
+        Dart_CObject msg {
+            .type = Dart_CObject_kArray,
+            .value = {
+                .as_array = {
+                    .length = std::size(arr),
+                    .values = arr,
+                },
+            },
+        };
+        if (!postCObject(send_port, &msg)) {
+            clog << __func__ << __LINE__ << " postCObject error" << endl; // when?
+            return {};
+        }
+        return {};
+    }
+#ifdef __ANDROID__
+        , MdkGetPlayerVid(texId)
+#endif
+    );
+    return true;
 }
