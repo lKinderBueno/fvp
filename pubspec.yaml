@@ -26,8 +26,8 @@ dependencies:
     git:
       url: https://github.com/lKinderBueno/video_player_flutter_v2.git
       path: packages/video_player/video_player_platform_interface
-      ref: main
-      #ref: 25dc409d82e114bbe381449f5c4f090184b7cd49
+      ref: v2.9.5
+
 
 dev_dependencies:
   flutter_test:

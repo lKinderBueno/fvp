@@ -58,4 +58,4 @@ class VideoPlayerRegistrant {
 bool isRegistered() {
   return VideoPlayerPlatform.instance.runtimeType == MdkVideoPlayerPlatform;
 }
-
+*/
