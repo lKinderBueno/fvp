@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:video_player_platform_interface/video_player_platform_interface.dart';
+
 import 'src/video_player_mdk.dart'
     if (dart.library.js_interop) 'src/video_player_dummy.dart'
     if (dart.library.html) 'src/video_player_dummy.dart';
@@ -54,8 +56,8 @@ class VideoPlayerRegistrant {
   }
 }
 
-/*
+
 bool isRegistered() {
   return VideoPlayerPlatform.instance.runtimeType == MdkVideoPlayerPlatform;
 }
-*/
+
